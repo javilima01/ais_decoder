@@ -4,10 +4,22 @@ from scipy.special import erf
 
 class matlab:
     @classmethod
-    def bitarray_to_bytes(cls, s) -> bytes:
-        s = "".join(map(str, s))
+    def bitarray_to_bytes(cls, s, invert: bool = False) -> bytes:
+        s = matlab.bitarray_to_string(s)
+        if invert:
+            return int(matlab.bitarray_flip_bytes(s), 2).to_bytes((len(s) + 7) // 8, byteorder='big')
         return int(s, 2).to_bytes((len(s) + 7) // 8, byteorder='big')
 
+    @classmethod
+    def bitarray_flip_bytes(cls, s):
+        reshaped_arr = s.reshape(-1, 8)
+        inverted_arr = reshaped_arr[:, ::-1]
+        return inverted_arr.flatten()
+    
+    @classmethod
+    def bitarray_to_string(cls, s) -> str:
+        return "".join(map(str, s))
+    
     @classmethod
     def _CRCGenerator(cls):
         return crcmod.predefined.mkPredefinedCrcFun("crc-16-genibus")

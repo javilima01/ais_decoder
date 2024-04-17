@@ -1,12 +1,11 @@
 # Proceso para decodificar una señal AIS en phyton
 
-from scipy.signal import resample_poly, lfilter
+from scipy.signal import resample_poly, lfilter, convolve
 import scipy.io as sio
 import numpy as np
-import matplotlib.pyplot as plt
 from modules import matlab
 from scipy.signal.windows import kaiser
-from scipy.signal import convolve
+from dataextractor import get_message
 
 archivo = "senhal_depuracion_ais_384K.dat"
 # Leer el archivo en modo binario ('rb')
@@ -363,34 +362,13 @@ for jj in range(len(refinedPulses)):
         # Seguir la especificación AIS para desempaquetar después de 5 unos consecutivos. Esto desempaquetará todo, incluida la bandera de fin en el mensaje AIS.
 
         ubits = matlab.aisUnstuff(abits[sb:])
-        
-        # Decodificar el mensaje basado en el tipo de mensaje detectado.
-        # Calcular el checksum, compararlo con los bits del mensaje recibido y,
-        # si el checksum es correcto, invertir los bytes y decodificar el mensaje.
-        # Checksum using matlab.CRCGenerator
-        index = 0
-        if (
-            msgType == 1
-            or msgType == 2
-            or msgType == 3
-            or msgType == 4
-            or msgType == 18
-        ):
-            index = 168
-        elif msgType == 5:
-            index = 425
-        elif msgType == 19:
-            index = 312
-        elif msgType == 21:
-            index = 272
+        ubits_padded = matlab.pad_to_nearest_multiple_of_eight(ubits)
+        ubits_flipped = matlab.bitarray_flip_bytes(ubits_padded)
+        ubits_string = matlab.bitarray_to_string(ubits_flipped)
+        message = get_message(msgType, ubits_string)
+
+        if matlab.get_checksum(ubits, message.checksum):
+            
+            print(message.json())
         else:
             print(f"Message Checksym Failed")
-
-        if matlab.get_checksum(ubits, index):
-            ubits_padded = matlab.pad_to_nearest_multiple_of_eight(ubits)
-            print(f"Data: {matlab.bitarray_to_bytes(ubits_padded).hex()}")
-        else:
-            print(f"Message Checksym Failed")
-
-
-# Media deslizante para quitar ruido
