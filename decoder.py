@@ -6,7 +6,6 @@ import numpy as np
 from modules import matlab
 from scipy.signal.windows import kaiser
 from dataextractor import get_message
-
 archivo = "senhal_depuracion_ais_384K.dat"
 # Leer el archivo en modo binario ('rb')
 with open(archivo, "rb") as file:
@@ -19,10 +18,43 @@ contenido = np.frombuffer(bytes_data, dtype=np.complex64)
 
 xnum = [complex(numero) for numero in contenido]
 xt = np.array(xnum)
+# from rtlsdr import RtlSdr
+# from threading import Semaphore, Thread
+# aux_samples = Semaphore(1)
+
+# xt = np.array([], np.complex_)
+# def add_samples(iq, context):
+#     global xt
+#     aux_samples.acquire()
+#     xt = np.concatenate((xt, iq))
+#     aux_samples.release()
+
+# def read_samples():
+#     sdr.read_samples_async(add_samples)
+
+# import time
+# sdr = RtlSdr()
+# sdr.sample_rate = 2.048e6  # Frecuencia de muestreo en Hz
+# sdr.center_freq = 161.75e6    # Frecuencia central en Hz (frecuencia AIS en mar)
+# sdr.gain = "auto"
+
+# print(f"FS: {sdr.sample_rate}")
+# samples_thread = Thread(target=read_samples)
+# samples_thread.start()
+
+# print("Started sleeping")
+# time.sleep(30)
+# print("Finished sleeping")
+
+
+# sdr.cancel_read_async()
+# samples_thread.join()
 
 # Realizamos la FFT de la señal
+print("Started decomulating")
 fs_nueva = 96000
 fs = 384000
+# fs = sdr.sample_rate
 x_resampled = resample_poly(xt, fs_nueva, fs)  # no es exacto del todo
 #print(x_resampled) -> coincide
 
@@ -141,7 +173,6 @@ OL = np.exp(1j * freq_angular * t)
 #print(OL) -> coincide
 
 refinedPulses = []
-
 for ii in range(len(pulso)):
     iniInd = (pulso[ii]["Bin_Inicial"] - 1) * N
     endInd = (pulso[ii]["Bin_Final"] - 1) * N
@@ -328,7 +359,7 @@ for jj in range(len(refinedPulses)):
         ]
 
         m = syncCorr[idx]
-
+        print("m", m)
         if m < 0.1:
             continue
 
