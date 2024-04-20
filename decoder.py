@@ -18,43 +18,11 @@ contenido = np.frombuffer(bytes_data, dtype=np.complex64)
 
 xnum = [complex(numero) for numero in contenido]
 xt = np.array(xnum)
-# from rtlsdr import RtlSdr
-# from threading import Semaphore, Thread
-# aux_samples = Semaphore(1)
-
-# xt = np.array([], np.complex_)
-# def add_samples(iq, context):
-#     global xt
-#     aux_samples.acquire()
-#     xt = np.concatenate((xt, iq))
-#     aux_samples.release()
-
-# def read_samples():
-#     sdr.read_samples_async(add_samples)
-
-# import time
-# sdr = RtlSdr()
-# sdr.sample_rate = 2.048e6  # Frecuencia de muestreo en Hz
-# sdr.center_freq = 161.75e6    # Frecuencia central en Hz (frecuencia AIS en mar)
-# sdr.gain = "auto"
-
-# print(f"FS: {sdr.sample_rate}")
-# samples_thread = Thread(target=read_samples)
-# samples_thread.start()
-
-# print("Started sleeping")
-# time.sleep(30)
-# print("Finished sleeping")
-
-
-# sdr.cancel_read_async()
-# samples_thread.join()
 
 # Realizamos la FFT de la señal
 print("Started decomulating")
 fs_nueva = 96000
 fs = 384000
-# fs = sdr.sample_rate
 x_resampled = resample_poly(xt, fs_nueva, fs)  # no es exacto del todo
 #print(x_resampled) -> coincide
 
@@ -171,7 +139,7 @@ freq_angular = 2 * np.pi * 25 / 96
 t = t = np.arange(len(detec))
 OL = np.exp(1j * freq_angular * t)
 #print(OL) -> coincide
-
+print(f'Hay {len(pulso)} pulsos')
 refinedPulses = []
 for ii in range(len(pulso)):
     iniInd = (pulso[ii]["Bin_Inicial"] - 1) * N
@@ -235,10 +203,12 @@ for ii in range(len(pulso)):
 n = len(detec)
 t = np.arange(n)
 OL = np.exp(1j * 2 * np.pi * 25 / 96 * t)
-
+print(f'Hay {len(refinedPulses)} refined pulses')
 for jj in range(len(refinedPulses)):
     iniInd = refinedPulses[jj]["Bin_Inicial"]
     endInd = refinedPulses[jj]["Bin_Final"]
+    print(endInd - iniInd + 1 > fs_nueva / 2 * 0.022)
+    print(endInd, iniInd)
     if endInd - iniInd + 1 > fs_nueva / 2 * 0.022:
 
         # Aislamos el pulso actual
@@ -397,7 +367,7 @@ for jj in range(len(refinedPulses)):
         ubits_flipped = matlab.bitarray_flip_bytes(ubits_padded)
         ubits_string = matlab.bitarray_to_string(ubits_flipped)
         message = get_message(msgType, ubits_string)
-
+        print(matlab.bitarray_to_bytes(ubits_flipped).hex())
         if matlab.get_checksum(ubits, message.checksum):
             
             print(message.json())

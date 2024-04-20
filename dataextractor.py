@@ -15,6 +15,37 @@ class CustomIndex:
         else:
             return None
 
+class NmeaSentence:
+    def __init__(self, sentence: str):
+        self.sentence = sentence.split(',')
+    
+    @property
+    def name(self):
+        return self.sentence[0]
+    
+    @property
+    def total_message(self):
+        return self.sentence[1]
+    
+    @property
+    def sentence_number(self):
+        return self.setence[2]
+    
+    @property
+    def seq_message_id(self):
+        return self.sentence[3]
+    
+    @property
+    def ais_channel(self):
+        return self.sentence[4]
+    
+    @property
+    def ais_message(self):
+        return self.sentence[5]
+    
+    @property
+    def fill_bits(self):
+        return self.sentence[6]
 
 class AisMessage:
     MESSAGE_ID = CustomIndex(0, 6)
