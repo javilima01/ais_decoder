@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
 
     for msg in UDPReceiver(args.host, port=args.port):
-        msg = msg.encode('utf-8')
+        msg = msg.decode('utf-8')
         msg = {
             'email': args.email,
             'nmea': msg
