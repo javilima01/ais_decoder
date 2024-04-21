@@ -39,6 +39,6 @@ if __name__ == "__main__":
         }
         response = requests.post(url, json=msg)
         if response.status_code == 200:
-            print('POST request was successful!')
+            print(f'Server_response: {response._content}')
         else:
             print(f'POST request failed with status code: {response.status_code}')
