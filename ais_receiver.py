@@ -37,7 +37,10 @@ if __name__ == "__main__":
             'email': args.email,
             'nmea': msg
         }
-        response = requests.post(url, json=msg)
+        try:
+            response = requests.post(url, json=msg)
+        except:
+            continue
         if response.status_code == 200:
             print(f'Server_response: {response._content}')
         else:
